@@ -59,6 +59,11 @@ class Connection
     {
     }
 
+    /**
+     * Connects to MySQL instance with Config params
+     *
+     * @throws \Kernel\Exception\DatabaseException When connection is failed
+     */
     private function connect()
     {
         $config = \Application::getConfig();
@@ -80,6 +85,13 @@ class Connection
         }
     }
 
+    /**
+     * Executes MySQL Query
+     *
+     * @param string $query
+     *
+     * @throws \Kernel\Exception\DatabaseException When query is failed
+     */
     public function execute($query)
     {
         if (!mysql_query($query, $this->_connection)) {
@@ -87,12 +99,31 @@ class Connection
         }
     }
 
+    /**
+     * Selects data from MySQL tables
+     *
+     * @param  string $query
+     * @param bool    $single Checks what should be returned: single object or an array
+     *
+     * @return array|\stdClass
+     * @throws \Kernel\Exception\DatabaseException When query is failed
+     */
     public function select($query, $single = false)
     {
-        if (!$result  = mysql_query($query, $this->_connection)) {
+        if (!$result = mysql_query($query, $this->_connection)) {
             throw new DatabaseException('MySQL query has not been executed: '.mysql_error($this->_connection));
         }
 
-        return $single?mysql_fetch_object($result):mysql_fetch_assoc($result);
+        if ($single) {
+            return mysql_fetch_object($result);
+        } else {
+            $list = array();
+            if (mysql_num_rows($result) > 0) {
+                while ($row = mysql_fetch_object($result)) {
+                    array_push($list, $row);
+                }
+            }
+            return $list;
+        }
     }
 }

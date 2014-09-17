@@ -8,8 +8,6 @@
 
 namespace Kernel\Exception;
 
-use Exception;
-
 /**
  * Class AbstractException
  *
@@ -20,7 +18,7 @@ class AbstractException extends \Exception
     /**
      * @inheritDoc
      */
-    public function __construct($message = "", $code = 500, Exception $previous = null)
+    public function __construct($message = "", $code = 500, \Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

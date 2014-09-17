@@ -1,6 +1,7 @@
 <?php
 /**
- * Bootstrap File for including necessary config files and autoloader
+ * Bootstrap File for including necessary config files and autoloader.
+ * Also will be used as phpunit bootsrap
  *
  * @author Mikhail Lantukh <lantukhmikhail@gmail.com>
  */

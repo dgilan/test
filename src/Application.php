@@ -8,6 +8,8 @@
 use \Kernel\Helper\Renderer;
 use \Kernel\Router\Router;
 use \Kernel\Database\Connection;
+use \Kernel\Security\Token;
+use \Kernel\Request\Request;
 
 /**
  * Class Application
@@ -23,6 +25,7 @@ class Application
     {
         try{
             Connection::getInstance();
+            Token::init();
             $content = Router::getInstance()->processRoute();
         } catch(\Exception $e){
             $renderer = new Renderer(APP_PATH.'/../src/Kernel/views/error.html.php');
@@ -31,6 +34,22 @@ class Application
         }
 
         self::_sendResponse($content);
+    }
+
+    /**
+     * Redirects page
+     *
+     * @param string $url
+     * @param string $flushMessage Flush message to be shown
+     */
+    public static function redirect($url, $flushMessage = null)
+    {
+        if ($flushMessage) {
+            Token::set('flush', $flushMessage);
+        }
+
+        session_write_close();
+        header('Location: '.Request::getHost().$url);
     }
 
     /**
@@ -63,9 +82,18 @@ class Application
     private static function _sendResponse($content)
     {
         $renderer = new Renderer(APP_PATH.'/layout.html.php');
-        $renderer->assign('content', $content);
-        $content = $renderer->render();
+        $renderer->assign(
+                 array(
+                     'content' => $content,
+                     'user'    => Token::getUser(),
+                     'route'   => Router::getInstance()->getRoute()
+                 )
+        );
+
+        $response = $renderer->render();
         Connection::getInstance()->disconnect();
-        echo $content;
+        echo $response;
+        Token::set('flush', null);
+        exit;
     }
-} 
+}

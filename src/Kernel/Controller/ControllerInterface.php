@@ -1,14 +1,32 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: dgilan
- * Date: 9/15/14
- * Time: 11:41 PM
+ * Controller Interface. All Controllers used in routes must implement this interface
+ *
+ * @package Kernel\Controller
+ * @author  Mikhail Lantukh <lantukhmikhail@gmail.com>
  */
 
 namespace Kernel\Controller;
 
+/**
+ * Interface ControllerInterface
+ *
+ * @package Kernel\Controller
+ */
+interface ControllerInterface
+{
+    /**
+     * Redirects to the other url
+     *
+     * @param string $url
+     * @param string $flushMessage Message that will be shown on the redirected page
+     */
+    public function redirect($url, $flushMessage = null);
 
-interface ControllerInterface {
-
+    /**
+     * Returns current user's info if it's authenticated now
+     *
+     * @return \stdClass|null
+     */
+    public function getUser();
 } 

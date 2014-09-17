@@ -43,7 +43,6 @@ class Renderer
         }
     }
 
-
     /**
      * Assigns the data to layout for rendering
      *

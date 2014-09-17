@@ -1,17 +1,48 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: dgilan
- * Date: 9/15/14
- * Time: 9:38 PM
+ * Abstract Controller
+ *
+ * @package Kernel\Controller
+ * @author  Mikhail Lantukh <lantukhmikhail@gmail.com>
  */
 
 namespace Kernel\Controller;
 
 use Kernel\Helper\Renderer;
+use Kernel\Request\Request;
+use Kernel\Security\Token;
 
-class AbstractController implements ControllerInterface
+/**
+ * Class AbstractController
+ *
+ * @package Kernel\Controller
+ */
+abstract class AbstractController implements ControllerInterface
 {
+    /**
+     * @inheritDoc
+     */
+    public function redirect($url, $flushMessage = null)
+    {
+        \Application::redirect($url, $flushMessage);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUser()
+    {
+        return Token::getUser();
+    }
+
+    /**
+     * Renders view
+     *
+     * @param string $view
+     * @param array  $data Data to be assigned to the view
+     *
+     * @return string
+     */
     protected function _renderView($view, $data = array())
     {
         $render = new Renderer($this->_getViewPath($view));
@@ -19,6 +50,13 @@ class AbstractController implements ControllerInterface
         return $render->render();
     }
 
+    /**
+     * Returns full path to the view
+     *
+     * @param string $view
+     *
+     * @return string
+     */
     private function _getViewPath($view)
     {
         $paths     = explode('\\', get_class($this));

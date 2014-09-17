@@ -30,6 +30,11 @@ class Router
     private $_registry = array();
 
     /**
+     * @var array Current Route
+     */
+    private $_currentRoute;
+
+    /**
      * Returns Router instance
      *
      * @return Router
@@ -51,8 +56,9 @@ class Router
      */
     public function load(array $routes)
     {
-        foreach ($routes as $route) {
-            $this->_registry[$route['pattern']] = $route;
+        foreach ($routes as $name => $route) {
+            $route['_name']         = $name;
+            $this->_registry[$name] = $route;
         }
     }
 
@@ -72,15 +78,17 @@ class Router
             throw new LoaderException(sprintf('Class "%s" was not found'));
         }
 
+        $this->_currentRoute = $route;
+
         $reflection = new \ReflectionClass($route['controller']);
 
         $interfaceName = 'Kernel\\Controller\\ControllerInterface';
         if (!$reflection->implementsInterface($interfaceName)) {
             throw new LoaderException(sprintf(
-                'Class "%s" must implement interface "%s"',
-                $route['controller'],
-                $interfaceName
-            ));
+                                          'Class "%s" must implement interface "%s"',
+                                          $route['controller'],
+                                          $interfaceName
+                                      ));
         }
         $reflectionMethod = $reflection->getMethod($route['action'].'Action');
 
@@ -124,11 +132,21 @@ class Router
     private function _findRoute($uri)
     {
         foreach ($this->_registry as $route) {
-            $routeParams = $this->_prepareRoute($route['pattern'], isset($route['_requirements'])?$route['_requirements']:array());
+            $routeParams = $this->_prepareRoute(
+                                $route['pattern'],
+                                isset($route['_requirements'])?$route['_requirements']:array()
+            );
 
             if (preg_match($routeParams['uri'], $uri, $match)) {
+
+                if (isset($route['_requirements']) && isset($route['_requirements']['_method'])) {
+                    if ($route['_requirements']['_method'] !== Request::method()) {
+                        continue;
+                    }
+                }
+
                 unset($match[0]);
-                if (strpos($uri, '?')!==false){
+                if (strpos($uri, '?') !== false) {
                     array_pop($match);
                 }
 
@@ -164,5 +182,15 @@ class Router
             }
         }
         return array('uri' => $pattern, 'params' => $params);
+    }
+
+    /**
+     * Returns current route
+     *
+     * @return array
+     */
+    public function getRoute()
+    {
+        return $this->_currentRoute;
     }
 }
